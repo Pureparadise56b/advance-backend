@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "node --watch src/index.js"
+    "dev": "nodemon -r dotenv/config src/index.js"
   },
   "keywords": [
     "advance",
@@ -14,9 +14,12 @@
   "author": "Toufique Al Ajay",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.18.2"
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "mongoose": "^8.0.4"
   },
   "devDependencies": {
+    "nodemon": "^3.0.2",
     "prettier": "^3.2.2"
   }
 }
