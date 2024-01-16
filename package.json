@@ -3,13 +3,17 @@
   "version": "1.0.0",
   "description": "advance backend course",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "node --watch src/index.js"
   },
   "keywords": [
     "advance",
     "backend"
   ],
   "author": "Toufique Al Ajay",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
 }
