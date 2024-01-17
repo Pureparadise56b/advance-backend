@@ -56,6 +56,7 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
+// add custom metods in userModel
 userSchema.methods.isPasswordCorrect = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
