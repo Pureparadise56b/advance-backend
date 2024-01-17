@@ -11,7 +11,7 @@ dotenv.config({ path: "./env" });
 connectDB()
   .then(() => {
     app.listen(port, () => {
-      console.log(`\nServer started at: https://localhost:${port}`);
+      console.log(`\nServer started at: http://localhost:${port}`);
     });
   })
   .catch((error) => {
