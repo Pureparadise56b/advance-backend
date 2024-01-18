@@ -268,7 +268,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "account details updated successfully"));
 });
 
-const editUserAvatar = asyncHandler(async (req, res) => {
+const updateUserAvatar = asyncHandler(async (req, res) => {
   let newAvatarPath;
   console.log(req.file);
   if (!req.file) {
@@ -295,7 +295,7 @@ const editUserAvatar = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, newAvatar, "edit avatar successfully"));
 });
 
-const editUserCoverImage = asyncHandler(async (req, res) => {
+const updateUserCoverImage = asyncHandler(async (req, res) => {
   let newCoverImagePath;
   console.log(req.file);
   if (!req.file) {
@@ -453,9 +453,9 @@ export {
   refreshAccessToken,
   changeCurrentPassword,
   getCurrentUser,
-  editUserAvatar,
+  updateUserAvatar,
   updateAccountDetails,
-  editUserCoverImage,
+  updateUserCoverImage,
   getUserChannelProfile,
   getUserWatchedHistory,
 };
