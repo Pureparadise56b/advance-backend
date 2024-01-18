@@ -40,11 +40,11 @@ router.route("/change-password").post(verifyJWT, changeCurrentPassword);
 router.route("/current-user").get(verifyJWT, getCurrentUser);
 router.route("/update-account").patch(verifyJWT, updateAccountDetails);
 router
-  .route("/update-profile")
+  .route("/update-avatar")
   .patch(verifyJWT, upload.single("newAvatar"), updateUserAvatar);
 router
   .route("/update-cover")
-  .patch(verifyJWT, upload.single("newCover"), updateUserCoverImage);
+  .patch(verifyJWT, upload.single("newCoverImage"), updateUserCoverImage);
 
 router.route("/channel/:username").get(verifyJWT, getUserChannelProfile);
 router.route("/watch-history").get(verifyJWT, getUserWatchedHistory);

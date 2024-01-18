@@ -8,7 +8,7 @@ const asyncHandler = (requestHandler) => {
 
 export { asyncHandler };
 
-/* We don't use try cath method */
+/* We don't use try catch method */
 
 // const asyncHandler = (fn) => {
 //   async (req, res, next) => {
