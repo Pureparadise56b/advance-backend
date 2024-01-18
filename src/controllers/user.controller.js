@@ -1,7 +1,10 @@
 import { asyncHandler } from "../utils/asyncHandler.util.js";
 import ApiError from "../utils/ApiError.util.js";
 import { User } from "../models/user.model.js";
-import { uploadCloudinary } from "../utils/cloudinary.util.js";
+import {
+  deleteCloudinary,
+  uploadCloudinary,
+} from "../utils/cloudinary.util.js";
 import { ApiResponse } from "../utils/ApiResponse.util.js";
 import jwt from "jsonwebtoken";
 
@@ -31,7 +34,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
 const registerUser = asyncHandler(async (req, res) => {
   // get user details from frontend
   const { username, email, fullname, password } = req.body;
-  console.log("BODY: ", req.body);
+  // console.log("BODY: ", req.body);
 
   // validation - not empty
   if (
@@ -80,7 +83,6 @@ const registerUser = asyncHandler(async (req, res) => {
   if (!avatar) {
     throw new ApiError(503, "Upload file service is not available");
   }
-  // console.log("AVATAR: ", avatar);
 
   // create user object - create entry in db
   const user = await User.create({
@@ -88,8 +90,8 @@ const registerUser = asyncHandler(async (req, res) => {
     username: username.toLowerCase(),
     email,
     password,
-    avatar: avatar.secure_url,
-    coverImage: coverImage?.secure_url || "",
+    avatar: [avatar.url, avatar.public_id],
+    coverImage: [coverImage?.secure_url, coverImage?.public_id] || ["", ""],
   });
 
   // remove password and refresh token field from response
@@ -214,4 +216,119 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 });
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken };
+const changeCurrentPassword = asyncHandler(async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+
+  const user = await User.findById(req.user?.id);
+  const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
+
+  if (!isPasswordCorrect) {
+    throw new ApiError(400, "Invalid old password");
+  }
+
+  user.password = newPassword;
+  await user.save({ validateBeforeSave: false });
+  res
+    .status(200)
+    .json(new ApiResponse(200, {}, "password changed successfully"));
+});
+
+const getCurrentUser = asyncHandler(async (req, res) => {
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { user: req?.user },
+        "current user fetched successfully"
+      )
+    );
+});
+
+const updateAccountDetails = asyncHandler(async (req, res) => {
+  const { fullname, email } = req.body;
+
+  if (!fullname || !email) {
+    throw new ApiError(400, "all fields are required");
+  }
+  const user = await User.findByIdAndUpdate(
+    req.user.id,
+    {
+      $set: {
+        fullname,
+        email,
+      },
+    },
+    { new: true }
+  ).select("-password");
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, user, "account details updated successfully"));
+});
+
+const editUserAvatar = asyncHandler(async (req, res) => {
+  let newAvatarPath;
+  console.log(req.file);
+  if (!req.file) {
+    throw new ApiError(400, "image file is required");
+  }
+  newAvatarPath = req.file.path;
+
+  const user = await User.findById(req.user?.id);
+
+  const deletedAvatar = await deleteCloudinary(user.avatar[1]);
+  if (!deletedAvatar) {
+    throw new ApiError(503, "Error while deleting the image");
+  }
+  const newAvatar = await uploadCloudinary(newAvatarPath);
+  if (!newAvatar) {
+    throw new ApiError(503, "Error while uploading the image");
+  }
+  user.avatar = [];
+  user.avatar.push(newAvatar?.secure_url);
+  user.avatar.push(newAvatar?.public_id);
+  await user.save({ validateBeforeSave: false });
+  res
+    .status(200)
+    .json(new ApiResponse(200, newAvatar, "edit avatar successfully"));
+});
+
+const editUserCoverImage = asyncHandler(async (req, res) => {
+  let newCoverImagePath;
+  console.log(req.file);
+  if (!req.file) {
+    throw new ApiError(400, "image file is required");
+  }
+  newCoverImagePath = req.file.path;
+
+  const user = await User.findById(req.user?.id);
+
+  const deletedCoverImage = await deleteCloudinary(user.coverImage[1]);
+  if (!deletedCoverImage) {
+    throw new ApiError(503, "Error while deleting the image");
+  }
+  const newCoverImage = await uploadCloudinary(newCoverImagePath);
+  if (!newCoverImage) {
+    throw new ApiError(503, "Error while uploading the image");
+  }
+  user.coverImage = [];
+  user.coverImage.push(newCoverImage?.secure_url);
+  user.coverImage.push(newCoverImage?.public_id);
+  await user.save({ validateBeforeSave: false });
+  res
+    .status(200)
+    .json(new ApiResponse(200, newCoverImage, "edit avatar successfully"));
+});
+
+export {
+  registerUser,
+  loginUser,
+  logoutUser,
+  refreshAccessToken,
+  changeCurrentPassword,
+  getCurrentUser,
+  editUserAvatar,
+  updateAccountDetails,
+  editUserCoverImage,
+};
