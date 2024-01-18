@@ -25,7 +25,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
 const registerUser = asyncHandler(async (req, res) => {
   // get user details from frontend
   const { username, email, fullname, password } = req.body;
-  // console.log("BODY: ", req.body);
+  console.log("BODY: ", req.body);
 
   // validation - not empty
   if (
@@ -132,7 +132,7 @@ const loginUser = asyncHandler(async (req, res) => {
   );
 
   // send refresh and access token as a response cookie to the user
-  const loggedInUser = User.findById(user._id).select(
+  const loggedInUser = await User.findById(user._id).select(
     "-password -refreshToken"
   );
   const options = {
