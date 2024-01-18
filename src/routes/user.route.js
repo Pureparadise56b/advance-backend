@@ -4,7 +4,6 @@ import {
   logoutUser,
   refreshAccessToken,
   registerUser,
-  editUserAvatar,
   changeCurrentPassword,
   getCurrentUser,
   updateAccountDetails,
