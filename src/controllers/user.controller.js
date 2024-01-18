@@ -7,6 +7,7 @@ import { ApiResponse } from "../utils/ApiResponse.util.js";
 const registerUser = asyncHandler(async (req, res) => {
   // get user details from frontend
   const { username, email, fullname, password } = req.body;
+  // console.log("BODY: ", req.body);
 
   // validation - not empty
   if (
@@ -16,7 +17,7 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   // check if user already exist: email
-  const existingUser = User.findOne({
+  const existingUser = await User.findOne({
     $or: [{ username }, { email }],
   });
 
@@ -25,10 +26,28 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   // check for avatar and images
-  const avatarLocalPath = req.files?.avatar[0]?.path;
-  const coverImageLocalPath = req.files?.coverImage[0]?.path;
+  let avatarLocalPath;
+  let coverImageLocalPath;
+
+  // console.log("Req files: ", req.files);
+  if (
+    req.files &&
+    Array.isArray(req.files.avatar) &&
+    req.files.avatar.length > 0
+  ) {
+    avatarLocalPath = req.files.avatar[0].path;
+  }
+
   if (!avatarLocalPath) {
     throw new ApiError(400, "Avatar file is required");
+  }
+
+  if (
+    req.files &&
+    Array.isArray(req.files.coverImage) &&
+    req.files.coverImage.length > 0
+  ) {
+    coverImageLocalPath = req.files.coverImage[0].path;
   }
 
   // if available then upload in cloudinary, avatar checked
@@ -37,6 +56,7 @@ const registerUser = asyncHandler(async (req, res) => {
   if (!avatar) {
     throw new ApiError(503, "Upload file service is not available");
   }
+  // console.log("AVATAR: ", avatar);
 
   // create user object - create entry in db
   const user = await User.create({
@@ -44,8 +64,8 @@ const registerUser = asyncHandler(async (req, res) => {
     username: username.toLowerCase(),
     email,
     password,
-    avatar: avatar.url,
-    coverImage: coverImage?.url || "",
+    avatar: avatar.secure_url,
+    coverImage: coverImage?.secure_url || "",
   });
 
   // remove password and refresh token field from response
